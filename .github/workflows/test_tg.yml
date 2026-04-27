@@ -1,0 +1,14 @@
+name: TG Test Bot
+
+on:
+  workflow_dispatch: # 讓我們可以在 GitHub 網頁上手動點擊執行
+
+jobs:
+  send_test_message:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Message via Curl
+        run: |
+          curl -X POST "https://api.telegram.org/bot${{ secrets.TG_TOKEN }}/sendMessage" \
+          -d "chat_id=${{ secrets.TG_CHAT_ID }}" \
+          -d "text=嘿嘿！我的 GitHub Action 成功連線到 TG 了！🎉"
