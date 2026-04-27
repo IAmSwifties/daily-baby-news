@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 import base64
 import re
 from googlenewsdecoder import new_decoderv1
+import trafilatura
 
 TG_TOKEN = os.getenv("TG_TOKEN")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")
@@ -55,10 +56,10 @@ def get_news_content():
                 guid = item.find('guid')
                 if guid is not None and guid.text:
                     google_link = guid.text
-            print(google_link)
             clean_title = title.split(' - ')[0] if ' - ' in title else title
             
             print(f"\n正在處理: {clean_title[:20]}...")
+            print(google_link)
             
             real_link = get_real_url(google_link)
             
@@ -68,15 +69,10 @@ def get_news_content():
                 print("  ⚠️ 無法解出真實網址，嘗試硬闖...")
                 
             try:
-                article_res = session.get(real_link, headers=headers, timeout=10)
-                soup = BeautifulSoup(article_res.content, 'html.parser')
-                
-                paragraphs = soup.find_all('p')
-                content_list = [p.text.strip() for p in paragraphs if p.text.strip()]
-                full_content = " ".join(content_list)
-                content = full_content[:1500]
-                
-                if len(content) > 50: 
+                downloaded = trafilatura.fetch_url(real_link)
+                content = trafilatura.extract(downloaded, include_comments=False, include_tables=False)
+                if content:
+                    content = content[:1500]
                     news_data_list.append(f"【標題】：{clean_title}\n【內容】：{content}...\n【連結】：{real_link}\n")
                     print("  ✅ 成功抓回真實內文封包！")
                 else:
