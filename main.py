@@ -8,22 +8,21 @@ import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup
 import base64
 import re
+from googlenewsdecoder import new_decoderv1
 
 TG_TOKEN = os.getenv("TG_TOKEN")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 
-def decode_google_news_url(url, session, headers):
-    """跟著 Google News 的 redirect，取得真實文章網址"""
+def get_real_url(google_link):
     try:
-        response = session.get(url, headers=headers, timeout=10, allow_redirects=True)
-        final_url = response.url
-        if 'news.google.com' not in final_url:
-            print(f"  🔗 成功追蹤到真實網址！")
-            return final_url, response  # 順便把 response 帶回去，不用再抓第二次
+        result = new_decoderv1(google_link)
+        if result.get("status") == True:
+            print(f"  🔗 成功取得真實網址！")
+            return result["decoded_url"]
     except Exception as e:
-        print(f"  ⚠️ redirect 追蹤失敗: {e}")
-    return url, None
+        print(f"  ⚠️ 解碼失敗: {e}")
+    return google_link
     
 def get_news_content():
     print("開始搜尋 Google 新聞並抓取內文...")
@@ -61,7 +60,7 @@ def get_news_content():
             
             print(f"\n正在處理: {clean_title[:20]}...")
             
-            real_link, article_res = decode_google_news_url(google_link, session, headers)
+            real_link = get_real_url(google_link)
             
             if real_link != google_link:
                 print(f"  🔗 成功解出真實網址！直接前往目標伺服器...")
@@ -69,9 +68,7 @@ def get_news_content():
                 print("  ⚠️ 無法解出真實網址，嘗試硬闖...")
                 
             try:
-                # 如果 redirect 時已經拿到 response，就直接用，不用再發一次請求
-                if article_res is None:
-                    article_res = session.get(real_link, headers=headers, timeout=10)
+                article_res = session.get(real_link, headers=headers, timeout=10)
                 soup = BeautifulSoup(article_res.content, 'html.parser')
                 
                 paragraphs = soup.find_all('p')
