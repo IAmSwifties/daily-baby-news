@@ -2,27 +2,33 @@ name: Daily Parenting Helper
 
 on:
   schedule:
-    - cron: '0 1 * * *'
+    - cron: '30 9 * * *'  # 台灣時間每天 17:30
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: 檢出程式碼
         uses: actions/checkout@v4
 
-      - name: 設定 Python (升級到 3.11)
+      - name: 設定 Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11' 
+          python-version: '3.11'
 
-      - name: 安裝新版套件
-        # 這裡改成安裝 google-genai
+      - name: 快取套件
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip
+
+      - name: 安裝套件
         run: |
-          pip install google-genai requests beautifulsoup4 googlenewsdecoder trafilatura
+          pip install google-genai requests googlenewsdecoder trafilatura
 
-      - name: 執行 Python 機器人
+      - name: 執行程式
         env:
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
