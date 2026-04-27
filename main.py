@@ -27,7 +27,7 @@ def generate_social_post(news):
     
     # 使用新版指令產生內容
     response = client.models.generate_content(
-        model='gemini-3.0-flash',
+        model='gemini-3-flash-preview',
         contents=prompt
     )
     return response.text
