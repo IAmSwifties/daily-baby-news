@@ -106,7 +106,7 @@ def generate_social_post(news):
     6. 文章最後必須附上新聞素材中提供的【標題】與【連結】作為參考資料。
     """
     
-    max_retries = 3
+    max_retries = 5
     for attempt in range(max_retries):
         try:
             response = client.models.generate_content(
@@ -117,8 +117,8 @@ def generate_social_post(news):
         except Exception as e:
             print(f"第 {attempt + 1} 次嘗試失敗，錯誤訊息：{e}")
             if attempt < max_retries - 1:
-                print("等待 10 秒後重試...")
-                time.sleep(10)
+                print("等待 15 秒後重試...")
+                time.sleep(15)
             else:
                 return "今天 AI 罷工了，請稍後再試！😭"
 
