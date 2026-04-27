@@ -13,25 +13,18 @@ TG_TOKEN = os.getenv("TG_TOKEN")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 
-def decode_google_news_url(url):
-    """底層破解：直接將 Google URL 裡的 Base64 payload 解碼，取出真實連結"""
+def decode_google_news_url(url, session, headers):
+    """跟著 Google News 的 redirect，取得真實文章網址"""
     try:
-        if '/articles/' in url:
-            # 擷取 /articles/ 後面的加密字串
-            encoded_str = url.split('/articles/')[1].split('?')[0]
-            # 補齊 Base64 結尾需要的 '=' 符號
-            encoded_str += "=" * ((4 - len(encoded_str) % 4) % 4)
-            # 使用 URL-safe 模式解碼成二進位資料
-            decoded_bytes = base64.urlsafe_b64decode(encoded_str)
-            # 從二進位資料中，利用正則表達式精準捕捉 http 開頭的真實網址
-            match = re.search(rb'https?://[^\x00-\x1F"\'<>\s]+', decoded_bytes)
-            if match:
-                return match.group(0).decode('utf-8')
+        response = session.get(url, headers=headers, timeout=10, allow_redirects=True)
+        final_url = response.url
+        if 'news.google.com' not in final_url:
+            print(f"  🔗 成功追蹤到真實網址！")
+            return final_url, response  # 順便把 response 帶回去，不用再抓第二次
     except Exception as e:
-        print(f"  ⚠️ 本地解碼失敗: {e}")
-    # 如果解碼失敗，就退回原本的網址
-    return url
-
+        print(f"  ⚠️ redirect 追蹤失敗: {e}")
+    return url, None
+    
 def get_news_content():
     print("開始搜尋 Google 新聞並抓取內文...")
     keywords = '育兒 新聞'
@@ -68,8 +61,7 @@ def get_news_content():
             
             print(f"\n正在處理: {clean_title[:20]}...")
             
-            # 【大絕招】不連線，直接在程式裡把隱藏的網址解算出來！
-            real_link = decode_google_news_url(google_link)
+            real_link, article_res = decode_google_news_url(google_link, session, headers)
             
             if real_link != google_link:
                 print(f"  🔗 成功解出真實網址！直接前往目標伺服器...")
@@ -77,9 +69,10 @@ def get_news_content():
                 print("  ⚠️ 無法解出真實網址，嘗試硬闖...")
                 
             try:
-                # 直接連線到真正的新聞網站
-                article_req = session.get(real_link, headers=headers, timeout=10)
-                soup = BeautifulSoup(article_req.content, 'html.parser')
+                # 如果 redirect 時已經拿到 response，就直接用，不用再發一次請求
+                if article_res is None:
+                    article_res = session.get(real_link, headers=headers, timeout=10)
+                soup = BeautifulSoup(article_res.content, 'html.parser')
                 
                 paragraphs = soup.find_all('p')
                 content_list = [p.text.strip() for p in paragraphs if p.text.strip()]
