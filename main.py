@@ -28,6 +28,9 @@ def get_news_content():
     query = urllib.parse.quote(f"{keywords} when:1d")
     rss_url = f"https://news.google.com/rss/search?q={query}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
     try:
+        custom_headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
         response = requests.get(rss_url)
         response.raise_for_status()
         root = ET.fromstring(response.content)
@@ -57,11 +60,8 @@ def get_news_content():
                 print("  ⚠️ 無法解出真實網址，嘗試硬闖...")
                 
             try:
-                custom_headers = {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                }
-                downloaded = trafilatura.fetch_url(real_link, headers=custom_headers)
-                content = trafilatura.extract(downloaded, include_comments=False, include_tables=False)
+                 response = requests.get(real_link, headers=custom_headers, timeout=10)
+                content = trafilatura.extract(response.text, include_comments=False, include_tables=False)
                 if content:
                     content = content[:1500]
                     news_data_list.append(f"【標題】：{clean_title}\n【內容】：{content}...\n【連結】：{real_link}\n")
