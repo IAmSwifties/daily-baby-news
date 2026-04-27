@@ -1,25 +1,18 @@
 import os
 import requests
-import google.generativeai as genai
+from google import genai # 改用新版套件
 from datetime import datetime
 
-# 從 GitHub Secrets 讀取設定
 TG_TOKEN = os.getenv("TG_TOKEN")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 
 def get_news_content():
-    """
-    這部分之後可以串接搜尋 API。
-    目前我們先給 AI 一些關鍵字，讓它去生成（或是簡單抓取 Google News RSS）
-    """
-    # 這裡我們模擬抓到的育兒關鍵字
     return "腸病毒疫苗補助、兒童肥胖率調查、幼兒營養迷思、北市彈性育兒工時"
 
 def generate_social_post(news):
-    # 設定 Gemini
-    genai.configure(api_key=GEMINI_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # 新版的設定與呼叫方式
+    client = genai.Client(api_key=GEMINI_KEY)
     
     prompt = f"""
     今天是 {datetime.now().strftime('%Y-%m-%d')}。
@@ -31,7 +24,12 @@ def generate_social_post(news):
     3. 加上豐富的 Emoji 並標註熱門標籤。
     4. 字數約 300-500 字。
     """
-    response = model.generate_content(prompt)
+    
+    # 使用新版指令產生內容
+    response = client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents=prompt
+    )
     return response.text
 
 def send_to_telegram(text):
@@ -39,7 +37,7 @@ def send_to_telegram(text):
     payload = {
         "chat_id": TG_CHAT_ID,
         "text": text,
-        "parse_mode": "Markdown" # 讓文字支援粗體等格式
+        "parse_mode": "Markdown"
     }
     requests.post(url, json=payload)
 
