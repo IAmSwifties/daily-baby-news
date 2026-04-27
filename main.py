@@ -47,12 +47,23 @@ def get_news_content():
         news_data_list = []
         session = requests.Session()
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)...',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'zh-TW,zh;q=0.9,en;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Referer': 'https://www.google.com/',
         }
         
         for item in items:
             title = item.find('title').text
-            google_link = item.find('link').text
+            link_el = item.find('link')
+            google_link = link_el.text or link_el.get('href', '')
+            # 新增：如果 link 裡沒有 /articles/，改抓 guid
+            if '/articles/' not in (google_link or ''):
+                guid = item.find('guid')
+                if guid is not None and guid.text:
+                    google_link = guid.text
+            print(google_link)
             clean_title = title.split(' - ')[0] if ' - ' in title else title
             
             print(f"\n正在處理: {clean_title[:20]}...")
