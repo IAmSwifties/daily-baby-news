@@ -16,6 +16,10 @@ def get_news_content():
     keywords = "育兒"
     query = urllib.parse.quote(f"{keywords} when:1d")
     rss_url = f"https://news.google.com/rss/search?q={query}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
+
+    keywords = '育兒 (營養 OR 補助 OR 疾病 OR 安全)'
+    query = urllib.parse.quote(f"{keywords} when:1d")
+    rss_url = f"https://news.google.com/rss/search?q={query}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
     
     try:
         response = requests.get(rss_url)
@@ -40,8 +44,11 @@ def get_news_content():
                 # 找尋網頁中的段落標籤 <p>
                 paragraphs = soup.find_all('p')
                 
-                # 取前 3 段文字合併，做為摘要
-                content = " ".join([p.text.strip() for p in paragraphs[:3] if p.text.strip()])
+                # 把所有段落都抓下來，但限制總字數避免某些極端長文讓程式卡住
+                content_list = [p.text.strip() for p in paragraphs if p.text.strip()]
+                full_content = " ".join(content_list)
+                # 限制每篇文章最多給 AI 讀 1500 字，這對台灣新聞來說已經非常夠了
+                content = full_content[:1500]
                 
                 if content:
                     news_data_list.append(f"【標題】：{title}\n【內容摘要】：{content}\n【連結】：{link}\n")
