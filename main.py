@@ -57,7 +57,10 @@ def get_news_content():
                 print("  ⚠️ 無法解出真實網址，嘗試硬闖...")
                 
             try:
-                downloaded = trafilatura.fetch_url(real_link)
+                custom_headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+                downloaded = trafilatura.fetch_url(real_link, headers=custom_headers)
                 content = trafilatura.extract(downloaded, include_comments=False, include_tables=False)
                 if content:
                     content = content[:1500]
