@@ -27,7 +27,6 @@ def get_news_content():
         root = ET.fromstring(response.content)
         
         news_data_list = []
-        # 加入 headers 偽裝成瀏覽器，降低被擋機率
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
         
         for item in root.findall('.//item'):
@@ -37,27 +36,26 @@ def get_news_content():
             print(f"正在讀取: {title[:20]}...")
             
             try:
-                # 點進新聞連結抓內文
                 article_req = requests.get(link, headers=headers, timeout=10)
                 soup = BeautifulSoup(article_req.content, 'html.parser')
                 
-                # 找尋網頁中的段落標籤 <p>
                 paragraphs = soup.find_all('p')
                 
-                # 把所有段落都抓下來，但限制總字數避免某些極端長文讓程式卡住
+                # 【優化 1】抓取全部段落，不只前三段
                 content_list = [p.text.strip() for p in paragraphs if p.text.strip()]
                 full_content = " ".join(content_list)
-                # 限制每篇文章最多給 AI 讀 1500 字，這對台灣新聞來說已經非常夠了
+                
+                # 限制長度，避免遇到超長農場文拖垮處理速度
                 content = full_content[:1500]
                 
-                if content:
-                    news_data_list.append(f"【標題】：{title}\n【內容摘要】：{content}\n【連結】：{link}\n")
+                if len(content) > 50: # 確保有抓到實質內容，不是只抓到空網頁
+                    news_data_list.append(f"【標題】：{title}\n【內容】：{content}...\n【連結】：{link}\n")
             except Exception as e:
                 print(f"這篇無法讀取內文跳過：{e}")
                 pass
             
-            # 限制只抓前 3 篇，避免資料量太大讓 AI 處理過久或出錯
-            if len(news_data_list) >= 5:
+            # 這次我們抓 4 篇，給 AI 更多素材挑選
+            if len(news_data_list) >= 4:
                 break
                 
         if news_data_list:
