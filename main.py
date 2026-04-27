@@ -5,9 +5,6 @@ from google import genai
 from datetime import datetime
 import urllib.parse
 import xml.etree.ElementTree as ET
-from bs4 import BeautifulSoup
-import base64
-import re
 from googlenewsdecoder import new_decoderv1
 import trafilatura
 
@@ -38,14 +35,6 @@ def get_news_content():
         print(f"👉 Google 回傳了 {len(items)} 篇新聞標題")
         
         news_data_list = []
-        session = requests.Session()
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)...',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'zh-TW,zh;q=0.9,en;q=0.8',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Referer': 'https://www.google.com/',
-        }
         
         for item in items:
             title = item.find('title').text
@@ -81,7 +70,7 @@ def get_news_content():
                 print(f"  ❌ 抓取目標伺服器失敗：{e}")
             
             # 抓滿 3 篇有內文的新聞就好
-            if len(news_data_list) >= 3:
+            if len(news_data_list) >= 5:
                 break
                 
         if news_data_list:
@@ -111,7 +100,7 @@ def generate_social_post(news):
     3. 加上豐富的 Emoji 並標註熱門標籤。
     4. 字數小於500 字。
     5. 絕對不要使用 Markdown 語法 (例如 ** 或 * 或 #)，純文字呈現即可。
-    6. 文章最後必須附上新聞素材中提供的【連結】作為參考資料。
+    6. 文章最後必須附上新聞素材中提供的【標題】與【連結】作為參考資料。
     """
     
     max_retries = 3
