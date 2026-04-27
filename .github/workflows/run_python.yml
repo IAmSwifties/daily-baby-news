@@ -20,7 +20,7 @@ jobs:
       - name: 安裝新版套件
         # 這裡改成安裝 google-genai
         run: |
-          pip install google-genai requests beautifulsoup4
+          pip install google-genai requests beautifulsoup4 googlenewsdecoder
 
       - name: 執行 Python 機器人
         env:
