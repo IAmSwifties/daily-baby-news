@@ -17,7 +17,7 @@ def get_news_content():
     query = urllib.parse.quote(f"{keywords} when:1d")
     rss_url = f"https://news.google.com/rss/search?q={query}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
 
-    keywords = '育兒 (營養 OR 補助 OR 疾病 OR 安全)'
+    keywords = '育兒 新聞'
     query = urllib.parse.quote(f"{keywords} when:1d")
     rss_url = f"https://news.google.com/rss/search?q={query}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
     
@@ -26,10 +26,14 @@ def get_news_content():
         response.raise_for_status()
         root = ET.fromstring(response.content)
         
+        items = root.findall('.//item')
+        # 👉 看看 Google 到底有沒有給我們東西！
+        print(f"👉 Google 回傳了 {len(items)} 篇新聞標題") 
+        
         news_data_list = []
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
         
-        for item in root.findall('.//item'):
+        for item in items:
             title = item.find('title').text
             link = item.find('link').text
             
@@ -40,30 +44,33 @@ def get_news_content():
                 soup = BeautifulSoup(article_req.content, 'html.parser')
                 
                 paragraphs = soup.find_all('p')
-                
-                # 【優化 1】抓取全部段落，不只前三段
                 content_list = [p.text.strip() for p in paragraphs if p.text.strip()]
                 full_content = " ".join(content_list)
-                
-                # 限制長度，避免遇到超長農場文拖垮處理速度
                 content = full_content[:1500]
                 
-                if len(content) > 50: # 確保有抓到實質內容，不是只抓到空網頁
+                # 【修改 2】保底機制！
+                if len(content) > 50: 
                     news_data_list.append(f"【標題】：{title}\n【內容】：{content}...\n【連結】：{link}\n")
+                    print("  ✅ 成功抓到內文！")
+                else:
+                    # 如果抓不到內文，也把標題留下來！
+                    news_data_list.append(f"【標題】：{title}\n【內容】：無詳細內文，請根據標題推測。\n【連結】：{link}\n")
+                    print("  ⚠️ 抓不到內文，只保留標題。")
+                    
             except Exception as e:
-                print(f"這篇無法讀取內文跳過：{e}")
-                pass
+                print(f"  ❌ 讀取內文發生錯誤：{e}")
+                # 就算報錯，也把標題留下來！
+                news_data_list.append(f"【標題】：{title}\n【內容】：無法讀取內文。\n【連結】：{link}\n")
             
-            # 這次我們抓 4 篇，給 AI 更多素材挑選
             if len(news_data_list) >= 4:
                 break
                 
         if news_data_list:
             final_news = "\n".join(news_data_list)
-            print("新聞內文抓取完成！")
+            print("新聞抓取完成！")
             return final_news
         else:
-            print("今天沒有抓到相關新聞內文喔！")
+            print("真的沒有半篇新聞。")
             return "今天沒有特別重大的育兒新聞。"
             
     except Exception as e:
