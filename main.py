@@ -58,10 +58,9 @@ def get_news_content():
                     google_link = guid.text
             clean_title = title.split(' - ')[0] if ' - ' in title else title
             
-            print(f"\n正在處理: {clean_title[:20]}...")
-            print(google_link)
-            
+            print(f"\n\n正在處理: {clean_title[:20]}...")
             real_link = get_real_url(google_link)
+            print(f"  🌐 真實網址：{real_link}")
             
             if real_link != google_link:
                 print(f"  🔗 成功解出真實網址！直接前往目標伺服器...")
