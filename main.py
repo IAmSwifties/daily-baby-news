@@ -32,14 +32,30 @@ def generate_social_post(news):
     )
     return response.text
 
+# def send_to_telegram(text):
+#     url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
+#     payload = {
+#         "chat_id": TG_CHAT_ID,
+#         "text": text,
+#         "parse_mode": "Markdown"
+#     }
+#     requests.post(url, json=payload)
+
 def send_to_telegram(text):
     url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
     payload = {
         "chat_id": TG_CHAT_ID,
         "text": text,
-        "parse_mode": "Markdown"
+        # 先把 parse_mode 註解掉或刪掉，避免符號解析錯誤
+        # "parse_mode": "Markdown" 
     }
-    requests.post(url, json=payload)
+    
+    # 接收 Telegram 的回傳結果
+    response = requests.post(url, json=payload)
+    
+    # 印出結果，這樣我們去 GitHub 的 Log 就能看到到底發生什麼事了！
+    print(f"Telegram 狀態碼: {response.status_code}")
+    print(f"Telegram 回應內容: {response.text}")
 
 if __name__ == "__main__":
     print("正在處理今日新聞...")
