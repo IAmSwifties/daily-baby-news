@@ -2,8 +2,8 @@ name: Daily Parenting Helper
 
 on:
   schedule:
-    - cron: '0 1 * * *' # 每天早上 9:00 (台灣時間)
-  workflow_dispatch:      # 讓我們可以手動點擊執行測試
+    - cron: '0 1 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -12,14 +12,15 @@ jobs:
       - name: 檢出程式碼
         uses: actions/checkout@v4
 
-      - name: 設定 Python
+      - name: 設定 Python (升級到 3.11)
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11' 
 
-      - name: 安裝必要套件
+      - name: 安裝新版套件
+        # 這裡改成安裝 google-genai
         run: |
-          pip install google-generativeai requests
+          pip install google-genai requests
 
       - name: 執行 Python 機器人
         env:
