@@ -60,7 +60,7 @@ def get_news_content():
                 print("  ⚠️ 無法解出真實網址，嘗試硬闖...")
                 
             try:
-                 response = requests.get(real_link, headers=custom_headers, timeout=10)
+                response = requests.get(real_link, headers=custom_headers, timeout=10)
                 content = trafilatura.extract(response.text, include_comments=False, include_tables=False)
                 if content:
                     content = content[:1500]
