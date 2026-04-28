@@ -132,6 +132,14 @@ def send_to_telegram(text):
     }
     
     response = requests.post(url, json=payload)
+
+    payload = {
+        "chat_id":HIRAY_CHAT_ID,
+        "text": text,
+        # 維持註解狀態，確保不會因為奇怪的符號導致 Telegram 報錯
+        # "parse_mode": "Markdown" 
+    }
+    response = requests.post(url, json=payload)
     
     print(f"Telegram 狀態碼: {response.status_code}")
     print(f"Telegram 回應內容: {response.text}")
