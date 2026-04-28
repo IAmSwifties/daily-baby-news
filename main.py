@@ -10,6 +10,7 @@ import trafilatura
 
 TG_TOKEN = os.getenv("TG_TOKEN")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")
+HIRAY_CHAT_ID = os.getenv("HIRAY_CHAT_ID")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 
 def get_real_url(google_link):
