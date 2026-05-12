@@ -15,6 +15,6 @@ jobs:
           -d "disable_notification=false"
 
           curl -X POST "https://api.telegram.org/bot${{ secrets.TG_TOKEN }}/sendMessage" \
-          -d "chat_id=${{ secrets.HIRAY_CHAT_ID }}" \
+          -d "chat_id=${{ secrets.TZUYIN_CHAT_ID }}" \
           -d "text=你好 早安午安晚安" \
           -d "disable_notification=false"
