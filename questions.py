@@ -7,7 +7,7 @@ import requests
 TG_TOKEN = os.getenv("TG_TOKEN")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
-TZUYIN_CHAT_ID = os.getent("TZUYIN_CHAT_ID")
+TZUYIN_CHAT_ID = os.getenv("TZUYIN_CHAT_ID")
 
 THEMES = [
     {
